@@ -1,65 +1,150 @@
-import Image from "next/image";
+// src/app/page.tsx
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { Search, Plus, Copy, Trash, Star, Hash } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { usePrompts } from "@/hooks/use-prompts";
+import { PromptModal } from "@/components/PromptModal";
+import { Category } from "@/types";
+import Link from "next/link";
+
+const CATEGORIES: Category[] = [
+  "Image", "Coding", "Marketing", "Writing", "Design", "Business", "Other"
+];
+
+export default function HomePage() {
+  const { prompts, addPrompt, toggleFavorite, deletePrompt } = usePrompts();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  const filteredPrompts = prompts.filter((prompt) => {
+    const matchesSearch = prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         prompt.summary.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || prompt.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="min-h-screen bg-slate-50/50 dark:bg-slate-900/50">
+      <div className="max-w-[1440px] mx-auto px-6 py-12 space-y-12">
+        
+        {/* Header & Search Section */}
+        <section className="space-y-6 text-center max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            PromptBox
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-slate-500 dark:text-slate-400 text-lg">
+            나만의 프롬프트 서재. 더 빠르고 스마트하게 관리하세요.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-slate-600 transition-colors" />
+            <Input 
+              placeholder="프롬프트 검색 (제목, 설명, 태그...)" 
+              className="pl-12 h-14 text-base bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl focus-visible:ring-slate-400 transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+        </section>
+
+        <section className="w-full flex justify-center">
+          <Tabs defaultValue="all" onValueChange={setSelectedCategory} className="w-full">
+            <TabsList className="bg-transparent h-auto p-0 flex flex-wrap justify-center gap-2">
+              <TabsTrigger 
+                value="all"
+                className="rounded-full px-5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 data-[state=active]:bg-slate-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-slate-900 shadow-sm transition-all text-xs"
+              >
+                All
+              </TabsTrigger>
+              {CATEGORIES.map((cat) => (
+                <TabsTrigger 
+                  key={cat} 
+                  value={cat}
+                  className="rounded-full px-5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 data-[state=active]:bg-slate-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-slate-900 shadow-sm transition-all text-xs"
+                >
+                  {cat}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </section>
+
+        {/* Prompt List Section */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredPrompts.map((prompt) => (
+            <Card key={prompt.id} className="group hover:shadow-md transition-all border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden rounded-2xl flex flex-col">
+              <CardHeader className="p-5 pb-1">
+                <div className="flex justify-between items-start mb-1">
+                  <Badge variant="secondary" className="text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full px-2 py-0">
+                    {prompt.category}
+                  </Badge>
+                  <div className="flex space-x-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-slate-400 hover:text-yellow-500 transition-colors"
+                      onClick={() => toggleFavorite(prompt.id)}
+                    >
+                      <Star className={prompt.is_favorite ? "fill-yellow-500 text-yellow-500" : ""} size={16} />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400" onClick={() => deletePrompt(prompt.id)}>
+                      <Trash size={16} className="hover:text-red-500 transition-colors" />
+                    </Button>
+                  </div>
+                </div>
+                <Link href={`/prompt/${prompt.id}`}>
+                  <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100 group-hover:text-slate-700 dark:group-hover:text-white transition-colors cursor-pointer line-clamp-1">
+                    {prompt.title}
+                  </CardTitle>
+                </Link>
+              </CardHeader>
+              <CardContent className="px-5 pb-4 flex-grow pt-0">
+                <p className="text-slate-600 dark:text-slate-400 line-clamp-2 text-xs leading-relaxed">
+                  {prompt.summary}
+                </p>
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {prompt.tags.slice(0, 3).map((tag) => (
+                    <span key={tag} className="inline-flex items-center text-[10px] text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0 rounded">
+                      <Hash size={8} className="mr-0.5" />
+                      {tag}
+                    </span>
+                  ))}
+                  {prompt.tags.length > 3 && (
+                    <span className="text-[10px] text-slate-400">+{prompt.tags.length - 3}</span>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter className="px-5 pt-2 pb-3 border-t border-slate-50 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-800/10">
+                <Button variant="ghost" size="sm" className="w-full justify-start text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors h-8" onClick={() => navigator.clipboard.writeText(prompt.content)}>
+                  <Copy size={14} className="mr-2" />
+                  <span className="text-xs font-medium">복사</span>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+          
+          {filteredPrompts.length === 0 && (
+            <div className="col-span-full py-20 text-center space-y-4">
+              <div className="bg-slate-100 dark:bg-slate-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+                <Search size={24} className="text-slate-400" />
+              </div>
+              <p className="text-slate-500 dark:text-slate-400">검색 결과가 없습니다.</p>
+            </div>
+          )}
+        </section>
+
+        {/* Floating Action Button */}
+        <div className="fixed bottom-10 right-10">
+          <PromptModal onSave={addPrompt} />
         </div>
-      </main>
-    </div>
+
+      </div>
+    </main>
   );
 }
