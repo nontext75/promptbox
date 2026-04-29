@@ -202,13 +202,13 @@ export default function HomePage() {
                 </div>
                 <Link href={`/prompt/${prompt.id}`}>
                   <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100 group-hover:text-slate-700 dark:group-hover:text-white transition-colors cursor-pointer line-clamp-1">
-                    {prompt.title}
+                    {prompt.title.replace(/\n/g, " ")}
                   </CardTitle>
                 </Link>
               </CardHeader>
               <CardContent className="px-5 pb-4 flex-grow pt-0">
-                <p className="text-slate-600 dark:text-slate-400 line-clamp-2 text-xs leading-relaxed">
-                  {prompt.summary}
+                <p className="text-slate-600 dark:text-slate-400 line-clamp-3 text-xs leading-relaxed">
+                  {prompt.summary.replace(/\n/g, " ")}
                 </p>
                 <div className="flex flex-wrap gap-1 mt-3">
                   {prompt.tags.slice(0, 3).map((tag) => (

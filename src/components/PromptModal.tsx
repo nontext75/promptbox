@@ -21,7 +21,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Plus, Sparkles, Edit } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 import { Category, Prompt } from "@/types";
 
 interface PromptModalProps {
@@ -37,7 +37,7 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
   const [category, setCategory] = useState<Category>("Other");
   const [summary, setSummary] = useState("");
   const [isAutoFilling, setIsAutoFilling] = useState(false);
-  const [aiModel, setAiModel] = useState<"gemini" | "big-pickle">("gemini");
+  const [aiModel, setAiModel] = useState<"gemini" | "big-pickle">("big-pickle");
   const [thumbnail, setThumbnail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
     }
   }, [initialData, open]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!content) return;
 
