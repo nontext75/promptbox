@@ -30,10 +30,20 @@
 
 ---
 
+## 🔑 환경 변수 복구 가이드 (다른 컴퓨터에서 시작할 때)
+`.env.local` 파일은 깃허브에 올라가지 않습니다! 다른 컴퓨터에서 GitHub 코드를 다운받으신 후에는, 최상위 폴더에 `.env.local` 파일을 하나 만드시고 아래 내용을 **그대로 붙여넣어 주세요.**
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://nbismihypxsfkbuoqrpb.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5iaXNtaWh5cHhzZmtidW9xcnBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NDQ5MjUsImV4cCI6MjA5MzAyMDkyNX0.o0ssBx1PHy7JiPjPrpWEzq65Ogf6110_Hc9uDXvNrlw
+```
+
+---
+
 ## 🎯 다음 세션에 바로 해야 할 일 (Next Steps)
 
 1. **Vercel 환경 변수 업데이트 (1순위)**
-   - Vercel 대시보드로 이동하여 `NEXT_PUBLIC_SUPABASE_ANON_KEY` 환경 변수의 값을 `.env.local`에 새로 저장된 **올바른 키**로 교체합니다.
+   - Vercel 대시보드로 이동하여 `NEXT_PUBLIC_SUPABASE_ANON_KEY` 환경 변수의 값을 위 올바른 키로 교체합니다.
    - 저장 후 반드시 **[Redeploy]**를 실행하여 새 키가 서버에 적용되도록 합니다.
    - 이후 브라우저에서 `https://promptbox-bice.vercel.app/`로 접속하여 구글 로그인이 정상적으로 작동하는지 최종 테스트합니다.
 
@@ -42,10 +52,3 @@
 
 3. **프롬프트 태그 및 필터링 고도화**
    - 저장된 프롬프트 목록에서 카테고리와 태그를 기반으로 세부 검색 및 필터링 기능을 강화합니다.
-
-4. **공유 및 팀 기능 모색 (선택)**
-   - MVP 이후의 단계로, 다른 사람과 프롬프트를 공유할 수 있는 권한 관리 테이블을 설계합니다.
-
----
-
-*이 문서를 참고하여 다음 세션을 빠르고 정확하게 시작하세요!*
