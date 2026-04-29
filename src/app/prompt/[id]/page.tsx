@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { Prompt } from "@/types";
 import { PromptModal } from "@/components/PromptModal";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function PromptDetailPage() {
   const { id } = useParams();
@@ -36,8 +37,12 @@ export default function PromptDetailPage() {
     );
   }
 
-  const handleCopy = () => {
+  const handleCopy = (e: React.MouseEvent<HTMLButtonElement>) => {
     navigator.clipboard.writeText(prompt.content);
+    const btn = e.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>복사 완료!`;
+    setTimeout(() => { btn.innerHTML = originalText; }, 2000);
   };
 
   const handleAiModify = async () => {
@@ -94,165 +99,218 @@ export default function PromptDetailPage() {
 
   return (
     <main className="min-h-screen bg-slate-50/50 dark:bg-slate-900/50">
-      <div className="max-w-[1440px] mx-auto px-6 py-12 space-y-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-[1000px] mx-auto px-6 py-12 space-y-10"
+      >
         
         {/* Navigation */}
-        <Button variant="ghost" onClick={() => router.back()} className="rounded-full">
+        <Button variant="ghost" onClick={() => router.back()} className="rounded-full hover:bg-white dark:hover:bg-slate-800 shadow-sm">
           <ArrowLeft className="mr-2 h-4 w-4" />
           뒤로 가기
         </Button>
 
         {/* Header Section */}
-        <section className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="space-y-4">
-            <Badge variant="secondary" className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full px-4 py-1">
+        <section className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-white dark:bg-slate-900 p-10 rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/5 rounded-full -ml-12 -mb-12 blur-3xl" />
+          
+          <div className="space-y-5 relative z-10">
+            <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 font-bold rounded-full px-5 py-1.5 text-[10px] tracking-widest uppercase">
               {prompt.category}
             </Badge>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-none">
               {prompt.title}
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-lg">
+            <p className="text-slate-500 dark:text-slate-400 text-xl font-medium leading-relaxed max-w-xl">
               {prompt.summary}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3 relative z-10">
             <Button 
               variant="outline" 
               size="icon" 
-              className="rounded-full w-12 h-12"
+              className="rounded-full w-14 h-14 border-slate-200 bg-white dark:bg-slate-800 shadow-md hover:scale-110 transition-transform"
               onClick={() => toggleFavorite(prompt.id)}
             >
-              <Star className={prompt.is_favorite ? "fill-yellow-500 text-yellow-500" : ""} size={20} />
+              <Star className={prompt.is_favorite ? "fill-yellow-500 text-yellow-500" : ""} size={24} />
             </Button>
             <Button 
               variant="outline" 
               size="icon" 
-              className="rounded-full w-12 h-12 hover:text-red-500"
+              className="rounded-full w-14 h-14 border-slate-200 bg-white dark:bg-slate-800 shadow-md hover:scale-110 transition-transform hover:text-red-500 hover:border-red-200"
               onClick={handleDelete}
             >
-              <Trash size={20} />
+              <Trash size={24} />
             </Button>
           </div>
         </section>
 
         {/* Content Section */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 flex items-center">
+        <section className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center">
               프롬프트 내용
+              <div className="ml-3 h-1 w-12 bg-purple-500 rounded-full" />
             </h2>
-            <Button variant="outline" size="sm" onClick={handleCopy} className="rounded-full">
+            <Button variant="outline" size="sm" onClick={handleCopy} className="rounded-full px-6 h-10 font-bold border-slate-200 bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-all active:scale-95">
               <Copy className="mr-2 h-4 w-4" />
               전체 복사
             </Button>
           </div>
           
-          {prompt.thumbnail && (
-            <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-              <img src={prompt.thumbnail} alt="Thumbnail" className="w-full h-auto max-h-[400px] object-cover" />
-            </div>
-          )}
+          <div className="space-y-6">
+            <AnimatePresence>
+              {prompt.thumbnail && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="w-full overflow-hidden rounded-[32px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl"
+                >
+                  <img src={prompt.thumbnail} alt="Thumbnail" className="w-full h-auto max-h-[500px] object-cover" />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          <Card className="rounded-3xl border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900">
-            <CardContent className="p-0">
-              <ScrollArea className="h-[400px] w-full p-8">
-                <pre className="whitespace-pre-wrap font-sans text-sm text-slate-700 dark:text-slate-300 leading-snug">
-                  {cleanDisplayContent(prompt.content)}
-                </pre>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+            <Card className="rounded-[40px] border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
+              <CardContent className="p-0">
+                <ScrollArea className="h-[500px] w-full p-10">
+                  <pre className="whitespace-pre-wrap font-mono text-base text-slate-700 dark:text-slate-300 leading-relaxed selection:bg-purple-200 dark:selection:bg-purple-900/50">
+                    {cleanDisplayContent(prompt.content)}
+                  </pre>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
         {/* Action Bar & AI Assist */}
-        <section className="space-y-6 pt-4">
-          <div className="flex flex-wrap gap-4">
+        <section className="space-y-8 pb-20">
+          <div className="flex flex-wrap gap-4 px-2">
             <PromptModal 
               initialData={prompt} 
               onSave={(data) => updatePrompt(prompt.id, data)}
               trigger={
-                <Button size="lg" className="rounded-full px-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900">
-                  <Edit className="mr-2 h-5 w-5" />
-                  수정하기
+                <Button size="lg" className="rounded-full h-16 px-10 text-lg font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl hover:scale-105 active:scale-95 transition-all">
+                  <Edit className="mr-3 h-6 w-6" />
+                  프롬프트 수정
                 </Button>
               }
             />
             <Button 
               size="lg" 
               variant="secondary" 
-              className="rounded-full px-8"
+              className="rounded-full h-16 px-10 text-lg font-bold shadow-lg hover:scale-105 active:scale-95 transition-all bg-slate-200 dark:bg-slate-800"
               onClick={() => setShowAiAssist(!showAiAssist)}
             >
-              <Sparkles className="mr-2 h-5 w-5" />
-              AI로 변형하기
+              <Sparkles className="mr-3 h-6 w-6 text-purple-600" />
+              AI 어시스턴트
             </Button>
           </div>
 
-          {showAiAssist && (
-            <Card className="rounded-3xl border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/50 p-6 animate-in slide-in-from-top-4">
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg flex items-center">
-                  <Sparkles className="mr-2 h-4 w-4 text-purple-500" />
-                  AI 변형 요청
-                </h3>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center rounded-full border border-slate-200 dark:border-slate-700 overflow-hidden text-xs">
-                    <button
-                      onClick={() => setAiModel("gemini")}
-                      className={`px-3 py-1.5 transition-colors ${
-                        aiModel === "gemini"
-                          ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
-                      }`}
-                    >
-                      Gemini
-                    </button>
-                    <button
-                      onClick={() => setAiModel("big-pickle")}
-                      className={`px-3 py-1.5 transition-colors ${
-                        aiModel === "big-pickle"
-                          ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
-                      }`}
-                    >
-                      Big Pickle
-                    </button>
-                  </div>
-                  <Input
-                    placeholder="예: 더 짧게 줄여줘, 마케팅 문구로 바꿔줘..."
-                    className="rounded-xl bg-white dark:bg-slate-900 flex-1 min-w-0"
-                    value={aiCommand}
-                    onChange={(e) => setAiCommand(e.target.value)}
-                  />
-                  <Button className="rounded-xl" onClick={handleAiModify} disabled={isTransforming || !aiCommand}>
-                    {isTransforming ? "변형 중..." : "변형 요청"}
-                  </Button>
-                </div>
-                
-                {aiResult && (
-                  <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                      <p className="text-slate-700 dark:text-slate-300 leading-relaxed italic whitespace-pre-wrap">
-                        {cleanDisplayContent(aiResult)}
-                      </p>
+          <AnimatePresence>
+            {showAiAssist && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <Card className="rounded-[40px] border-2 border-purple-100 dark:border-purple-900/30 bg-gradient-to-br from-purple-50/50 to-white dark:from-purple-900/10 dark:to-slate-900 p-10 shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 rounded-full -mr-32 -mt-32 blur-3xl" />
+                  
+                  <div className="space-y-8 relative z-10">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-black text-2xl flex items-center tracking-tight text-slate-900 dark:text-white">
+                        <Sparkles className="mr-3 h-6 w-6 text-purple-500 animate-pulse" />
+                        AI 변형 요청
+                      </h3>
+                      <div className="flex items-center p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-inner">
+                        {["gemini", "big-pickle"].map((m) => (
+                          <button
+                            key={m}
+                            onClick={() => setAiModel(m as any)}
+                            className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
+                              aiModel === m
+                                ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-md scale-105"
+                                : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                            }`}
+                          >
+                            {m === "gemini" ? "Gemini 2.0" : "Big Pickle"}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" className="rounded-full" onClick={() => setAiResult("")}>취소</Button>
-                      <Button variant="outline" className="rounded-full" onClick={handleUpdateCurrent}>
-                        현재 내용 덮어쓰기
-                      </Button>
-                      <Button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white" onClick={handleSaveVersion}>
-                        새 버전으로 저장
+
+                    <div className="flex items-center gap-4">
+                      <div className="relative flex-1 group">
+                        <Input
+                          placeholder="어떻게 바꿔드릴까요? (예: 더 상세하게, 짧게 요약, 영어로 번역...)"
+                          className="rounded-[24px] h-16 pl-6 text-lg bg-white dark:bg-slate-900 border-slate-200 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-inner"
+                          value={aiCommand}
+                          onChange={(e) => setAiCommand(e.target.value)}
+                        />
+                      </div>
+                      <Button 
+                        size="lg"
+                        className="rounded-[24px] h-16 px-10 font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50" 
+                        onClick={handleAiModify} 
+                        disabled={isTransforming || !aiCommand}
+                      >
+                        {isTransforming ? (
+                          <div className="flex items-center">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            생성 중...
+                          </div>
+                        ) : "프롬프트 변형"}
                       </Button>
                     </div>
+                    
+                    <AnimatePresence>
+                      {aiResult && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="space-y-6 pt-8 border-t border-purple-100 dark:border-purple-900/30"
+                        >
+                          <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border-2 border-purple-100 dark:border-purple-900/30 shadow-xl relative group">
+                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="rounded-full h-8 text-[10px] font-bold uppercase tracking-widest"
+                                onClick={() => navigator.clipboard.writeText(aiResult)}
+                              >
+                                결과 복사
+                              </Button>
+                            </div>
+                            <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-mono text-base whitespace-pre-wrap">
+                              {cleanDisplayContent(aiResult)}
+                            </p>
+                          </div>
+                          <div className="flex justify-end gap-3">
+                            <Button variant="ghost" className="rounded-full h-12 px-8 font-bold text-slate-500" onClick={() => setAiResult("")}>취소</Button>
+                            <Button variant="outline" className="rounded-full h-12 px-8 font-bold border-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800" onClick={handleUpdateCurrent}>
+                              현재 내용 덮어쓰기
+                            </Button>
+                            <Button className="rounded-full h-12 px-8 font-bold bg-gradient-to-r from-purple-600 to-blue-600 hover:scale-105 transition-all text-white shadow-xl shadow-purple-500/20" onClick={handleSaveVersion}>
+                              새 버전으로 저장
+                            </Button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                )}
-              </div>
-            </Card>
-          )}
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
 
-      </div>
+      </motion.div>
     </main>
   );
 }

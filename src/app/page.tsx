@@ -13,6 +13,7 @@ import { usePrompts } from "@/hooks/use-prompts";
 import { PromptModal } from "@/components/PromptModal";
 import { Category } from "@/types";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORIES: Category[] = [
   "Image", "Coding", "Marketing", "Writing", "Design", "Business", "Other"
@@ -173,80 +174,108 @@ export default function HomePage() {
 
         {/* Prompt List Section */}
         <section className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
-          {filteredPrompts.map((prompt) => (
-            <div key={prompt.id} className="break-inside-avoid mb-6">
-              <Card className="group hover:shadow-md transition-all border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden rounded-2xl flex flex-col h-full">
-                {prompt.thumbnail && (
-                  <div className="w-full overflow-hidden border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <img src={prompt.thumbnail} alt="Thumbnail" className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" />
-                  </div>
-                )}
-                <CardHeader className="p-5 pb-1">
-                <div className="flex justify-between items-start mb-1">
-                  <Badge variant="secondary" className="text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full px-2 py-0">
-                    {prompt.category}
-                  </Badge>
-                  <div className="flex space-x-1">
+          <AnimatePresence mode="popLayout">
+            {filteredPrompts.map((prompt, index) => (
+              <motion.div
+                key={prompt.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="break-inside-avoid mb-6"
+              >
+                <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden rounded-3xl flex flex-col h-full shadow-sm">
+                  {prompt.thumbnail && (
+                    <div className="w-full overflow-hidden border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                      <img src={prompt.thumbnail} alt="Thumbnail" className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110" />
+                    </div>
+                  )}
+                  <CardHeader className="p-6 pb-1">
+                    <div className="flex justify-between items-start mb-2">
+                      <Badge variant="secondary" className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full px-3 py-0.5 tracking-wider uppercase">
+                        {prompt.category}
+                      </Badge>
+                      <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-slate-400 hover:text-yellow-500 transition-colors rounded-full"
+                          onClick={() => toggleFavorite(prompt.id)}
+                        >
+                          <Star className={prompt.is_favorite ? "fill-yellow-500 text-yellow-500" : ""} size={16} />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 rounded-full" onClick={() => deletePrompt(prompt.id)}>
+                          <Trash size={16} className="hover:text-red-500 transition-colors" />
+                        </Button>
+                      </div>
+                    </div>
+                    <Link href={`/prompt/${prompt.id}`}>
+                      <CardTitle className="text-xl font-bold text-slate-900 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors cursor-pointer line-clamp-2 leading-tight mb-2">
+                        {prompt.title.replace(/\n/g, " ")}
+                      </CardTitle>
+                    </Link>
+                  </CardHeader>
+                  <CardContent className="px-6 pb-6 flex-grow pt-0">
+                    <p className="text-slate-600 dark:text-slate-400 line-clamp-3 text-sm leading-relaxed mb-4">
+                      {prompt.summary.replace(/\n/g, " ")}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-auto">
+                      {prompt.tags.slice(0, 4).map((tag) => (
+                        <button
+                          key={tag}
+                          onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                          className={`inline-flex items-center text-[10px] px-2 py-0.5 rounded-lg font-medium transition-all ${
+                            selectedTag === tag
+                              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md"
+                              : "text-slate-400 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-700"
+                          }`}
+                        >
+                          <Hash size={8} className="mr-0.5" />
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="px-6 py-4 border-t border-slate-50 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-800/10">
                     <Button 
                       variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7 text-slate-400 hover:text-yellow-500 transition-colors"
-                      onClick={() => toggleFavorite(prompt.id)}
+                      size="sm" 
+                      className="w-full justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all h-10 rounded-xl hover:bg-white dark:hover:bg-slate-800 shadow-sm hover:shadow active:scale-95" 
+                      onClick={(e) => {
+                        navigator.clipboard.writeText(prompt.content);
+                        const btn = e.currentTarget;
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = `<span class="flex items-center text-green-500"><svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>복사됨!</span>`;
+                        setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+                      }}
                     >
-                      <Star className={prompt.is_favorite ? "fill-yellow-500 text-yellow-500" : ""} size={16} />
+                      <Copy size={16} className="mr-2" />
+                      <span className="text-xs font-bold">프롬프트 복사</span>
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400" onClick={() => deletePrompt(prompt.id)}>
-                      <Trash size={16} className="hover:text-red-500 transition-colors" />
-                    </Button>
-                  </div>
-                </div>
-                <Link href={`/prompt/${prompt.id}`}>
-                  <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100 group-hover:text-slate-700 dark:group-hover:text-white transition-colors cursor-pointer line-clamp-1">
-                    {prompt.title.replace(/\n/g, " ")}
-                  </CardTitle>
-                </Link>
-              </CardHeader>
-              <CardContent className="px-5 pb-4 flex-grow pt-0">
-                <p className="text-slate-600 dark:text-slate-400 line-clamp-3 text-xs leading-relaxed">
-                  {prompt.summary.replace(/\n/g, " ")}
-                </p>
-                <div className="flex flex-wrap gap-1 mt-3">
-                  {prompt.tags.slice(0, 3).map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                      className={`inline-flex items-center text-[10px] px-1.5 py-0 rounded transition-colors ${
-                        selectedTag === tag
-                          ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-                          : "text-slate-400 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
-                    >
-                      <Hash size={8} className="mr-0.5" />
-                      {tag}
-                    </button>
-                  ))}
-                  {prompt.tags.length > 3 && (
-                    <span className="text-[10px] text-slate-400">+{prompt.tags.length - 3}</span>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter className="px-5 pt-2 pb-3 border-t border-slate-50 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-800/10">
-                <Button variant="ghost" size="sm" className="w-full justify-start text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors h-8" onClick={() => navigator.clipboard.writeText(prompt.content)}>
-                  <Copy size={14} className="mr-2" />
-                  <span className="text-xs font-medium">복사</span>
-                </Button>
-              </CardFooter>
-              </Card>
-            </div>
-          ))}
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
           
           {filteredPrompts.length === 0 && (
-            <div className="col-span-full py-20 text-center space-y-4">
-              <div className="bg-slate-100 dark:bg-slate-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-                <Search size={24} className="text-slate-400" />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="col-span-full py-32 text-center space-y-6"
+            >
+              <div className="bg-white dark:bg-slate-800 w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-xl border border-slate-100 dark:border-slate-700">
+                <Search size={32} className="text-slate-300 animate-pulse" />
               </div>
-              <p className="text-slate-500 dark:text-slate-400">검색 결과가 없습니다.</p>
-            </div>
+              <div className="space-y-2">
+                <p className="text-xl font-bold text-slate-900 dark:text-slate-100 italic">"웁스! 찾으시는 프롬프트가 없어요"</p>
+                <p className="text-slate-500 dark:text-slate-400">다른 검색어나 카테고리를 시도해볼까요?</p>
+              </div>
+              <Button variant="outline" className="rounded-full px-8" onClick={() => { setSearchQuery(""); setSelectedCategory("all"); setSelectedTag(null); }}>
+                필터 초기화
+              </Button>
+            </motion.div>
           )}
         </section>
 
