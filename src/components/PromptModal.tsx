@@ -76,14 +76,14 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
+      <DialogTrigger render={
+        trigger as React.ReactElement || (
           <Button size="lg" className="rounded-full h-14 px-6 shadow-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900">
             <Plus className="mr-2 h-5 w-5" />
             새 프롬프트
           </Button>
-        )}
-      </DialogTrigger>
+        )
+      } />
       <DialogContent className="sm:max-w-[525px] rounded-3xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
