@@ -1,67 +1,100 @@
 // src/hooks/use-prompts.ts
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Prompt, Category } from "@/types";
-import { MOCK_PROMPTS } from "@/lib/mock-data";
-
-const STORAGE_KEY = "promptbox-prompts";
+import { supabase } from "@/lib/supabase";
 
 export function usePrompts() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      setPrompts(JSON.parse(saved));
+  const fetchPrompts = useCallback(async () => {
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from('prompts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching prompts:', error);
     } else {
-      setPrompts(MOCK_PROMPTS);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_PROMPTS));
+      setPrompts(data || []);
     }
     setIsLoading(false);
   }, []);
 
-  const savePrompts = (newPrompts: Prompt[]) => {
-    setPrompts(newPrompts);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newPrompts));
-  };
+  useEffect(() => {
+    fetchPrompts();
+  }, [fetchPrompts]);
 
   const cleanContent = (content: string) => {
     return content.replace(/\n\s*\n+/g, '\n').trim();
   };
 
-  const addPrompt = (promptData: Partial<Prompt>) => {
-    const newPrompt: Prompt = {
-      id: Math.random().toString(36).substring(2, 9),
-      user_id: "user-1", // Mock user
-      title: promptData.title || "Untitled Prompt",
-      content: cleanContent(promptData.content || ""),
-      category: promptData.category || "Other",
-      summary: promptData.summary || "",
-      tags: promptData.tags || [],
-      is_favorite: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    savePrompts([newPrompt, ...prompts]);
+  const addPrompt = async (promptData: Partial<Prompt>) => {
+    const cleanedContent = cleanContent(promptData.content || "");
+    const { data, error } = await supabase
+      .from('prompts')
+      .insert([{
+        title: promptData.title || "Untitled Prompt",
+        content: cleanedContent,
+        category: promptData.category || "Other",
+        summary: promptData.summary || cleanedContent.substring(0, 50) + "...",
+        tags: promptData.tags || [],
+        is_favorite: false,
+        user_id: (await supabase.auth.getUser()).data.user?.id || null, // Handle auth if available
+      }])
+      .select();
+
+    if (error) {
+      console.error('Error adding prompt:', error);
+    } else if (data) {
+      setPrompts([data[0], ...prompts]);
+    }
   };
 
-  const updatePrompt = (id: string, updates: Partial<Prompt>) => {
+  const updatePrompt = async (id: string, updates: Partial<Prompt>) => {
     if (updates.content) {
       updates.content = cleanContent(updates.content);
     }
-    savePrompts(
-      prompts.map((p) => (p.id === id ? { ...p, ...updates, updated_at: new Date().toISOString() } : p))
-    );
+    const { error } = await supabase
+      .from('prompts')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating prompt:', error);
+    } else {
+      setPrompts(prompts.map((p) => (p.id === id ? { ...p, ...updates } : p)));
+    }
   };
 
-  const deletePrompt = (id: string) => {
-    savePrompts(prompts.filter((p) => p.id !== id));
+  const deletePrompt = async (id: string) => {
+    const { error } = await supabase
+      .from('prompts')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting prompt:', error);
+    } else {
+      setPrompts(prompts.filter((p) => p.id !== id));
+    }
   };
 
-  const toggleFavorite = (id: string) => {
-    savePrompts(
-      prompts.map((p) => (p.id === id ? { ...p, is_favorite: !p.is_favorite } : p))
-    );
+  const toggleFavorite = async (id: string) => {
+    const prompt = prompts.find((p) => p.id === id);
+    if (!prompt) return;
+
+    const { error } = await supabase
+      .from('prompts')
+      .update({ is_favorite: !prompt.is_favorite })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error toggling favorite:', error);
+    } else {
+      setPrompts(prompts.map((p) => (p.id === id ? { ...p, is_favorite: !p.is_favorite } : p)));
+    }
   };
 
   return {
@@ -71,5 +104,6 @@ export function usePrompts() {
     updatePrompt,
     deletePrompt,
     toggleFavorite,
+    refresh: fetchPrompts
   };
 }
