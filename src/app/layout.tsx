@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "AI 프롬프트를 저장하고 관리하는 가장 스마트한 방법",
 };
 
+import { Header } from "@/components/Header";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,12 @@ export default function RootLayout({
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-slate-50/50 dark:bg-slate-900/50">
+        <Header />
+        <div className="flex-grow">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

@@ -18,8 +18,12 @@ const CATEGORIES: Category[] = [
   "Image", "Coding", "Marketing", "Writing", "Design", "Business", "Other"
 ];
 
+import { useAuth } from "@/hooks/use-auth";
+import { LogIn, Sparkles } from "lucide-react";
+
 export default function HomePage() {
-  const { prompts, addPrompt, toggleFavorite, deletePrompt } = usePrompts();
+  const { user, isLoading: authLoading, signInWithGoogle } = useAuth();
+  const { prompts, addPrompt, toggleFavorite, deletePrompt, isLoading: promptsLoading } = usePrompts();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -29,6 +33,69 @@ export default function HomePage() {
     const matchesCategory = selectedCategory === "all" || prompt.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-slate-50/50 dark:bg-slate-900/50">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-full" />
+          <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] px-6 text-center space-y-12">
+        <div className="space-y-6 max-w-3xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium">
+            <Sparkles className="w-4 h-4 text-purple-500" />
+            AI 기반 프롬프트 관리의 시작
+          </div>
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-slate-900 dark:text-white leading-[1.1]">
+            프롬프트를 관리하는 <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">가장 우아한 방법</span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
+            분산된 프롬프트를 한곳에 모으고 AI와 함께 더 강력하게 활용하세요. <br />
+            오직 당신만을 위한 개인용 프롬프트 서재, PromptBox.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
+          <Button 
+            size="lg" 
+            onClick={signInWithGoogle}
+            className="h-14 px-10 rounded-full text-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-105 transition-all shadow-xl shadow-purple-500/10"
+          >
+            <LogIn className="w-5 h-5 mr-3" />
+            Google로 시작하기
+          </Button>
+          <Button 
+            size="lg" 
+            variant="outline"
+            className="h-14 px-10 rounded-full text-lg border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+          >
+            기능 살펴보기
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl w-full pt-12 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-500">
+          {[
+            { title: "빠른 저장", desc: "AI가 자동으로 제목과 요약을 생성합니다." },
+            { title: "스마트 검색", desc: "수천 개의 프롬프트를 1초 만에 찾습니다." },
+            { title: "AI 변형", desc: "기존 프롬프트를 AI로 즉시 수정합니다." }
+          ].map((feature, i) => (
+            <div key={i} className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm text-left space-y-3">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white">{feature.title}</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-slate-50/50 dark:bg-slate-900/50">
