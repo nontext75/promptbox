@@ -20,4 +20,5 @@ export interface Prompt {
   is_favorite: boolean;
   created_at: string;
   updated_at: string;
+  thumbnail?: string;
 }

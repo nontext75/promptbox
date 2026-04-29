@@ -26,12 +26,19 @@ export default function HomePage() {
   const { prompts, addPrompt, toggleFavorite, deletePrompt, isLoading: promptsLoading } = usePrompts();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  const allTags = Array.from(new Set(prompts.flatMap((p) => p.tags))).sort();
 
   const filteredPrompts = prompts.filter((prompt) => {
-    const matchesSearch = prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         prompt.summary.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      prompt.title.toLowerCase().includes(q) ||
+      prompt.summary.toLowerCase().includes(q) ||
+      prompt.tags.some((t) => t.toLowerCase().includes(q));
     const matchesCategory = selectedCategory === "all" || prompt.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesTag = !selectedTag || prompt.tags.includes(selectedTag);
+    return matchesSearch && matchesCategory && matchesTag;
   });
 
   if (authLoading) {
@@ -120,12 +127,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="w-full flex justify-center">
-          <Tabs defaultValue="all" onValueChange={setSelectedCategory} className="w-full">
+        <section className="w-full flex justify-center mb-8">
+          <Tabs defaultValue="all" onValueChange={setSelectedCategory} className="w-full flex flex-col items-center">
             <TabsList className="bg-transparent h-auto p-0 flex flex-wrap justify-center gap-2">
               <TabsTrigger 
                 value="all"
-                className="rounded-full px-5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 data-[state=active]:bg-slate-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-slate-900 shadow-sm transition-all text-xs"
+                className="rounded-full px-5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black shadow-sm transition-all text-xs"
               >
                 All
               </TabsTrigger>
@@ -133,7 +140,7 @@ export default function HomePage() {
                 <TabsTrigger 
                   key={cat} 
                   value={cat}
-                  className="rounded-full px-5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 data-[state=active]:bg-slate-900 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-slate-900 shadow-sm transition-all text-xs"
+                  className="rounded-full px-5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black shadow-sm transition-all text-xs"
                 >
                   {cat}
                 </TabsTrigger>
@@ -142,11 +149,39 @@ export default function HomePage() {
           </Tabs>
         </section>
 
+        {/* Tag Filter Section */}
+        {allTags.length > 0 && (
+          <section className="w-full flex justify-center">
+            <div className="flex flex-wrap justify-center gap-2">
+              {allTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                  className={`inline-flex items-center text-xs px-3 py-1 rounded-full border transition-all ${
+                    selectedTag === tag
+                      ? "bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-400"
+                  }`}
+                >
+                  <Hash size={10} className="mr-1" />
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Prompt List Section */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <section className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
           {filteredPrompts.map((prompt) => (
-            <Card key={prompt.id} className="group hover:shadow-md transition-all border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden rounded-2xl flex flex-col">
-              <CardHeader className="p-5 pb-1">
+            <div key={prompt.id} className="break-inside-avoid mb-6">
+              <Card className="group hover:shadow-md transition-all border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden rounded-2xl flex flex-col h-full">
+                {prompt.thumbnail && (
+                  <div className="w-full overflow-hidden border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                    <img src={prompt.thumbnail} alt="Thumbnail" className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" />
+                  </div>
+                )}
+                <CardHeader className="p-5 pb-1">
                 <div className="flex justify-between items-start mb-1">
                   <Badge variant="secondary" className="text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full px-2 py-0">
                     {prompt.category}
@@ -177,10 +212,18 @@ export default function HomePage() {
                 </p>
                 <div className="flex flex-wrap gap-1 mt-3">
                   {prompt.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="inline-flex items-center text-[10px] text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0 rounded">
+                    <button
+                      key={tag}
+                      onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                      className={`inline-flex items-center text-[10px] px-1.5 py-0 rounded transition-colors ${
+                        selectedTag === tag
+                          ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                          : "text-slate-400 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      }`}
+                    >
                       <Hash size={8} className="mr-0.5" />
                       {tag}
-                    </span>
+                    </button>
                   ))}
                   {prompt.tags.length > 3 && (
                     <span className="text-[10px] text-slate-400">+{prompt.tags.length - 3}</span>
@@ -193,7 +236,8 @@ export default function HomePage() {
                   <span className="text-xs font-medium">복사</span>
                 </Button>
               </CardFooter>
-            </Card>
+              </Card>
+            </div>
           ))}
           
           {filteredPrompts.length === 0 && (

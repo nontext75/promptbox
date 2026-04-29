@@ -40,6 +40,7 @@ export function usePrompts() {
         category: promptData.category || "Other",
         summary: promptData.summary || cleanedContent.substring(0, 50) + "...",
         tags: promptData.tags || [],
+        thumbnail: promptData.thumbnail || null,
         is_favorite: false,
         user_id: (await supabase.auth.getUser()).data.user?.id || null, // Handle auth if available
       }])

@@ -21,7 +21,8 @@ export default function PromptDetailPage() {
   const [showAiAssist, setShowAiAssist] = useState(false);
   const [aiCommand, setAiCommand] = useState("");
   const [aiResult, setAiResult] = useState("");
-
+  const [isTransforming, setIsTransforming] = useState(false);
+  const [aiModel, setAiModel] = useState<"gemini" | "big-pickle">("big-pickle");
   useEffect(() => {
     const found = prompts.find((p) => p.id === id);
     if (found) setPrompt(found);
@@ -39,10 +40,24 @@ export default function PromptDetailPage() {
     navigator.clipboard.writeText(prompt.content);
   };
 
-  const handleAiModify = () => {
-    if (!aiCommand) return;
-    // Mock AI transformation
-    setAiResult(`[AI 변형 결과]: ${prompt.content}\n(요청하신 "${aiCommand}"에 맞춰 변형된 내용입니다.)`);
+  const handleAiModify = async () => {
+    if (!aiCommand || !prompt) return;
+    setIsTransforming(true);
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "transform", content: prompt.content, command: aiCommand, model: aiModel }),
+      });
+      const data = await res.json();
+      if (data.result) setAiResult(data.result);
+      else setAiResult("AI 변형에 실패했습니다.");
+    } catch (e) {
+      console.error("AI 변형 실패:", e);
+      setAiResult("AI 변형에 실패했습니다.");
+    } finally {
+      setIsTransforming(false);
+    }
   };
 
   const cleanDisplayContent = (text: string) => {
@@ -58,6 +73,16 @@ export default function PromptDetailPage() {
       summary: `${prompt.title}의 AI 변형 버전입니다.`,
     });
     router.push("/");
+  };
+
+  const handleUpdateCurrent = () => {
+    if (!aiResult) return;
+    updatePrompt(prompt.id, {
+      ...prompt,
+      content: aiResult,
+    });
+    setAiResult("");
+    setShowAiAssist(false);
   };
 
   const handleDelete = () => {
@@ -121,6 +146,13 @@ export default function PromptDetailPage() {
               전체 복사
             </Button>
           </div>
+          
+          {prompt.thumbnail && (
+            <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+              <img src={prompt.thumbnail} alt="Thumbnail" className="w-full h-auto max-h-[400px] object-cover" />
+            </div>
+          )}
+
           <Card className="rounded-3xl border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900">
             <CardContent className="p-0">
               <ScrollArea className="h-[400px] w-full p-8">
@@ -163,14 +195,38 @@ export default function PromptDetailPage() {
                   <Sparkles className="mr-2 h-4 w-4 text-purple-500" />
                   AI 변형 요청
                 </h3>
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="예: 더 짧게 줄여줘, 마케팅 문구로 바꿔줘..." 
-                    className="rounded-xl bg-white dark:bg-slate-900"
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center rounded-full border border-slate-200 dark:border-slate-700 overflow-hidden text-xs">
+                    <button
+                      onClick={() => setAiModel("gemini")}
+                      className={`px-3 py-1.5 transition-colors ${
+                        aiModel === "gemini"
+                          ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      Gemini
+                    </button>
+                    <button
+                      onClick={() => setAiModel("big-pickle")}
+                      className={`px-3 py-1.5 transition-colors ${
+                        aiModel === "big-pickle"
+                          ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      Big Pickle
+                    </button>
+                  </div>
+                  <Input
+                    placeholder="예: 더 짧게 줄여줘, 마케팅 문구로 바꿔줘..."
+                    className="rounded-xl bg-white dark:bg-slate-900 flex-1 min-w-0"
                     value={aiCommand}
                     onChange={(e) => setAiCommand(e.target.value)}
                   />
-                  <Button className="rounded-xl" onClick={handleAiModify}>변형 요청</Button>
+                  <Button className="rounded-xl" onClick={handleAiModify} disabled={isTransforming || !aiCommand}>
+                    {isTransforming ? "변형 중..." : "변형 요청"}
+                  </Button>
                 </div>
                 
                 {aiResult && (
@@ -182,6 +238,9 @@ export default function PromptDetailPage() {
                     </div>
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" className="rounded-full" onClick={() => setAiResult("")}>취소</Button>
+                      <Button variant="outline" className="rounded-full" onClick={handleUpdateCurrent}>
+                        현재 내용 덮어쓰기
+                      </Button>
                       <Button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white" onClick={handleSaveVersion}>
                         새 버전으로 저장
                       </Button>
