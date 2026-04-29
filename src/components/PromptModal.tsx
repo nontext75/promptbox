@@ -21,8 +21,9 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles, Edit, X, Image as ImageIcon } from "lucide-react";
 import { Category, Prompt } from "@/types";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface PromptModalProps {
   onSave: (data: { title: string; content: string; category: Category; summary: string; tags: string[]; thumbnail?: string | null }) => void;
@@ -134,29 +135,40 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
           <div className="space-y-2">
-            <Label htmlFor="content">프롬프트 내용</Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="content">프롬프트 내용</Label>
+              <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{content.length} characters</span>
+            </div>
             <Textarea 
               id="content" 
               placeholder="여기에 프롬프트를 붙여넣으세요..." 
-              className="min-h-[150px] resize-none rounded-xl text-sm"
+              className="min-h-[180px] resize-none rounded-2xl text-sm border-slate-200 focus:ring-purple-500 focus:border-purple-500 transition-all bg-slate-50/50 dark:bg-slate-900/50"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               required
             />
           </div>
           
-          {thumbnail && (
-            <div className="relative inline-block mt-2">
-              <img src={thumbnail} alt="Thumbnail preview" className="w-24 h-24 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" />
-              <button
-                type="button"
-                onClick={() => setThumbnail(null)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
+          <AnimatePresence>
+            {thumbnail && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                className="relative group w-32 h-32"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
-            </div>
-          )}
+                <div className="absolute inset-0 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity" />
+                <img src={thumbnail} alt="Thumbnail preview" className="relative w-full h-full object-cover rounded-2xl border-2 border-white dark:border-slate-800 shadow-xl" />
+                <button
+                  type="button"
+                  onClick={() => setThumbnail(null)}
+                  className="absolute -top-2 -right-2 bg-black dark:bg-white text-white dark:text-black rounded-full p-1.5 shadow-lg hover:scale-110 transition-transform z-10"
+                >
+                  <X size={12} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           {!initialData && (
             <div className="flex items-center justify-end gap-2">
@@ -200,22 +212,26 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="title">제목 (선택)</Label>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="title">제목</Label>
+                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{title.length}/20</span>
+              </div>
               <Input 
                 id="title" 
                 placeholder="제목 입력" 
-                className="rounded-xl"
+                className="rounded-xl border-slate-200 focus:ring-purple-500"
                 value={title}
+                maxLength={20}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">카테고리</Label>
               <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
-                <SelectTrigger className="rounded-xl">
+                <SelectTrigger className="rounded-xl border-slate-200">
                   <SelectValue placeholder="카테고리 선택" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl">
                   <SelectItem value="Image">Image</SelectItem>
                   <SelectItem value="Coding">Coding</SelectItem>
                   <SelectItem value="Marketing">Marketing</SelectItem>
@@ -229,12 +245,16 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="summary">한 줄 설명 (선택)</Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="summary">한 줄 설명</Label>
+              <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{summary.length}/50</span>
+            </div>
             <Input 
               id="summary" 
               placeholder="프롬프트를 간단히 설명해주세요" 
-              className="rounded-xl"
+              className="rounded-xl border-slate-200 focus:ring-purple-500"
               value={summary}
+              maxLength={50}
               onChange={(e) => setSummary(e.target.value)}
             />
           </div>
