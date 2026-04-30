@@ -34,11 +34,18 @@
 ---
 
 ## 🔑 환경 변수 가이드
+`.env.local` 파일은 보안상 깃허브에 올라가지 않습니다. 다른 환경에서 작업을 이어갈 때는 반드시 아래 키들을 새로 설정해 주세요.
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://nbismihypxsfkbuoqrpb.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5iaXNtaWh5cHhzZmtidW9xcnBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NDQ5MjUsImV4cCI6MjA5MzAyMDkyNX0.o0ssBx1PHy7JiPjPrpWEzq65Ogf6110_Hc9uDXvNrlw
-GEMINI_API_KEY=... (스크래퍼 작동을 위해 필요)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
 ```
+
+### ⚠️ GEMINI_API_KEY 설정 필수 (중요!)
+이번에 추가된 **'실시간 AI 스크래퍼(Scraper)'** 기능은 Google Gemini API를 사용합니다. 
+- 이 키가 없으면 '탐색' 페이지에서 외부 URL을 긁어올 때 `500 에러`가 발생합니다.
+- 다른 컴퓨터에서 작업하거나 Vercel에 배포할 때 반드시 이 키를 환경 변수에 추가해 주세요.
 
 ---
 
