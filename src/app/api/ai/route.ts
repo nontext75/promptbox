@@ -51,11 +51,31 @@ ${content}
 {
   "title": "간결한 제목 (20자 이내)",
   "summary": "한 줄 설명 (50자 이내)",
-  "category": "Image|Coding|Marketing|Writing|Design|Business|Other 중 하나"
+  "category": "Image|Coding|Marketing|Writing|Design|Business|Other 중 하나",
+  "tags": ["태그1", "태그2", "태그3", "태그4", "태그5"]
 }`
       );
-      const parsed = JSON.parse(text);
-      return NextResponse.json(parsed);
+      try {
+        const parsed = JSON.parse(text);
+        return NextResponse.json(parsed);
+      } catch (e) {
+        // JSON 파싱 실패 시 텍스트에서 JSON 추출 시도
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return NextResponse.json(JSON.parse(jsonMatch[0]));
+        }
+        throw e;
+      }
+    }
+
+    if (action === "suggest-tags") {
+      const text = await runAI(
+        model,
+        `다음 AI 프롬프트에 어울리는 짧은 태그(단어)들을 5개 추천해줘. 콤마(,)로 구분해서 태그만 출력해. 설명이나 인사말 없이 오직 콤마로 구분된 단어들만 출력해.
+        
+        프롬프트: ${content}`
+      );
+      return NextResponse.json({ tags: text.split(",").map(t => t.trim().replace(/#/g, '')) });
     }
 
     if (action === "transform") {

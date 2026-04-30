@@ -40,6 +40,8 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
   const [isAutoFilling, setIsAutoFilling] = useState(false);
   const [aiModel, setAiModel] = useState<"gemini" | "big-pickle">("big-pickle");
   const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     if (initialData) {
@@ -48,6 +50,7 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
       setCategory(initialData.category);
       setSummary(initialData.summary);
       setThumbnail(initialData.thumbnail || null);
+      setTags(initialData.tags || []);
     }
   }, [initialData, open]);
 
@@ -60,7 +63,7 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
       content,
       category,
       summary: summary || content.substring(0, 50) + "...",
-      tags: initialData?.tags || [],
+      tags: tags,
       thumbnail,
     });
 
@@ -70,6 +73,7 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
       setCategory("Other");
       setSummary("");
       setThumbnail(null);
+      setTags([]);
     }
     setOpen(false);
   };
@@ -107,11 +111,24 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
       if (data.title) setTitle(data.title);
       if (data.summary) setSummary(data.summary);
       if (data.category) setCategory(data.category as Category);
+      if (data.tags) setTags(data.tags);
     } catch (e) {
       console.error("AI 자동 채우기 실패:", e);
     } finally {
       setIsAutoFilling(false);
     }
+  };
+
+  const addTag = (tag: string) => {
+    const trimmed = tag.trim().replace(/,/g, '');
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags([...tags, trimmed]);
+    }
+    setTagInput("");
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(t => t !== tagToRemove));
   };
 
   return (
@@ -242,6 +259,41 @@ export function PromptModal({ onSave, initialData, trigger }: PromptModalProps) 
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tags">태그</Label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <AnimatePresence>
+                {tags.map((tag) => (
+                  <motion.span
+                    key={tag}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="flex items-center gap-1 px-3 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full text-xs font-bold"
+                  >
+                    #{tag}
+                    <button type="button" onClick={() => removeTag(tag)}>
+                      <X size={10} />
+                    </button>
+                  </motion.span>
+                ))}
+              </AnimatePresence>
+            </div>
+            <Input 
+              id="tags" 
+              placeholder="태그 입력 후 엔터 (예: 코딩, 웹디자인)" 
+              className="rounded-xl border-slate-200 focus:ring-purple-500"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addTag(tagInput);
+                }
+              }}
+            />
           </div>
 
           <div className="space-y-2">

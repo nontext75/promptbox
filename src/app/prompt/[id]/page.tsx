@@ -44,14 +44,21 @@ export default function PromptDetailPage() {
     setTimeout(() => { btn.innerHTML = originalText; }, 2000);
   };
 
-  const handleAiModify = async () => {
-    if (!aiCommand || !prompt) return;
+  const handleAiModify = async (customCommand?: string) => {
+    const finalCommand = customCommand || aiCommand;
+    if (!finalCommand || !prompt) return;
     setIsTransforming(true);
+    setAiResult(""); // 이전 결과 초기화
     try {
       const res = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "transform", content: prompt.content, command: aiCommand, model: aiModel }),
+        body: JSON.stringify({ 
+          action: "transform", 
+          content: prompt.content, 
+          command: finalCommand, 
+          model: aiModel 
+        }),
       });
       const data = await res.json();
       if (data.result) setAiResult(data.result);
@@ -239,19 +246,43 @@ export default function PromptDetailPage() {
                       </div>
                     </div>
 
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { label: "✨ 최적화", cmd: "이 프롬프트를 더 정교하고 효과적으로 개선해줘." },
+                        { label: "📝 요약", cmd: "이 프롬프트의 핵심 내용을 유지하면서 짧게 요약해줘." },
+                        { label: "🌐 영문 번역", cmd: "이 프롬프트를 영어로 번역해줘." },
+                        { label: "💡 창의적 변형", cmd: "이 프롬프트에 창의적인 요소를 추가해서 색다르게 변형해줘." },
+                      ].map((action) => (
+                        <Button
+                          key={action.label}
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full text-[10px] h-8 bg-white/50 dark:bg-slate-800/50 border-purple-100 dark:border-purple-900/30 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                          onClick={() => {
+                            setAiCommand(action.cmd);
+                            handleAiModify(action.cmd);
+                          }}
+                          disabled={isTransforming}
+                        >
+                          {action.label}
+                        </Button>
+                      ))}
+                    </div>
+
                     <div className="flex items-center gap-4">
                       <div className="relative flex-1 group">
                         <Input
-                          placeholder="어떻게 바꿔드릴까요? (예: 더 상세하게, 짧게 요약, 영어로 번역...)"
+                          placeholder="어떻게 바꿔드릴까요? (직접 입력)"
                           className="rounded-[24px] h-16 pl-6 text-lg bg-white dark:bg-slate-900 border-slate-200 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-inner"
                           value={aiCommand}
                           onChange={(e) => setAiCommand(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleAiModify()}
                         />
                       </div>
                       <Button 
                         size="lg"
                         className="rounded-[24px] h-16 px-10 font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50" 
-                        onClick={handleAiModify} 
+                        onClick={() => handleAiModify()} 
                         disabled={isTransforming || !aiCommand}
                       >
                         {isTransforming ? (
