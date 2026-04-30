@@ -5,16 +5,37 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { LogIn, LogOut, User as UserIcon } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Logo } from "@/components/Logo";
 
 export function Header() {
   const { user, signInWithGoogle, signOut, isLoading } = useAuth();
+  const pathname = usePathname();
+
+  const getLinkStyle = (href: string) => {
+    const isActive = pathname === href;
+    return `text-sm font-bold transition-colors ${
+      isActive 
+        ? "text-blue-600 dark:text-blue-400" 
+        : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+    }`;
+  };
 
   return (
     <header className="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-          PromptBox
+        <Link href="/" className="hover:opacity-80 transition-opacity">
+          <Logo />
         </Link>
+
+        <nav className="hidden md:flex items-center gap-8 ml-8 flex-1">
+          <Link href="/" className={getLinkStyle("/")}>
+            내 서재
+          </Link>
+          <Link href="/discover" className={getLinkStyle("/discover")}>
+            탐색
+          </Link>
+        </nav>
 
         <div className="flex items-center gap-4">
           {!isLoading && (

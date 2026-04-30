@@ -10,8 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePrompts } from "@/hooks/use-prompts";
-import { PromptModal } from "@/components/PromptModal";
 import { Category } from "@/types";
+import { Logo } from "@/components/Logo";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -111,9 +111,9 @@ export default function HomePage() {
         
         {/* Header & Search Section */}
         <section className="space-y-6 text-center max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            PromptBox
-          </h1>
+          <div className="flex justify-center py-4">
+            <Logo className="scale-[2] origin-center" />
+          </div>
           <p className="text-slate-500 dark:text-slate-400 text-lg">
             나만의 프롬프트 서재. 더 빠르고 스마트하게 관리하세요.
           </p>
@@ -281,7 +281,12 @@ export default function HomePage() {
 
         {/* Floating Action Button */}
         <div className="fixed bottom-10 right-10">
-          <PromptModal onSave={addPrompt} />
+          <Link href="/prompt/new">
+            <Button size="lg" className="rounded-full h-16 px-8 shadow-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-110 active:scale-95 transition-all group">
+              <Plus className="mr-3 h-6 w-6 group-hover:rotate-90 transition-transform duration-300" />
+              <span className="text-lg font-bold">새 프롬프트</span>
+            </Button>
+          </Link>
         </div>
 
       </div>

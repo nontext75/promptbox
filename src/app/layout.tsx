@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { Header } from "@/components/Header";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({
   children,
@@ -34,6 +35,7 @@ export default function RootLayout({
         <div className="flex-grow">
           {children}
         </div>
+        <Toaster />
       </body>
     </html>
   );

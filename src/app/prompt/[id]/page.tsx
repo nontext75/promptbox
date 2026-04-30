@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Copy, Edit, Trash, Star, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Prompt } from "@/types";
-import { PromptModal } from "@/components/PromptModal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -188,16 +187,14 @@ export default function PromptDetailPage() {
         {/* Action Bar & AI Assist */}
         <section className="space-y-8 pb-20">
           <div className="flex flex-wrap gap-4 px-2">
-            <PromptModal 
-              initialData={prompt} 
-              onSave={(data) => updatePrompt(prompt.id, data)}
-              trigger={
-                <Button size="lg" className="rounded-full h-16 px-10 text-lg font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl hover:scale-105 active:scale-95 transition-all">
-                  <Edit className="mr-3 h-6 w-6" />
-                  프롬프트 수정
-                </Button>
-              }
-            />
+            <Button 
+              size="lg" 
+              className="rounded-full h-16 px-10 text-lg font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl hover:scale-105 active:scale-95 transition-all"
+              onClick={() => router.push(`/prompt/${prompt.id}/edit`)}
+            >
+              <Edit className="mr-3 h-6 w-6" />
+              프롬프트 수정
+            </Button>
             <Button 
               size="lg" 
               variant="secondary" 

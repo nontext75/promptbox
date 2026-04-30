@@ -7,18 +7,21 @@
 
 ## 🚀 지금까지 완료된 작업 (What's Done)
 
-1. **Supabase 데이터베이스 전환 완료**
-   - 로컬 스토리지 의존성을 제거하고 Supabase DB 연동을 마쳤습니다.
-   - `use-prompts.ts` 훅을 통해 데이터를 Supabase에서 직접 읽고/쓰도록 개편했습니다.
+1. **AI 기반 프롬프트 스크래퍼(Scraper) 구현**
+   - 외부 URL(포털, SNS, 미드저니 등)에서 AI가 자동으로 프롬프트와 연관 이미지를 추출하는 기능을 구현했습니다.
+   - `/api/scrape` 엔드포인트를 통해 Gemini AI 분석 로직을 연동했습니다.
 
-2. **Google OAuth 인증 연동 완료**
-   - Supabase Auth를 활용한 Google 로그인 기능을 구현했습니다.
-   - 랜딩 페이지 UI와 로그인 플로우를 분리하여, 인증되지 않은 사용자는 랜딩 페이지를 보도록 처리했습니다.
-   - Vercel 배포 URL(`promptbox-bice.vercel.app`)을 Supabase 리디렉션 목록에 등록했습니다.
+2. **탐색(Discover) 및 스크랩 기능 추가**
+   - 공용 프롬프트를 둘러보고 내 서재로 즉시 복제할 수 있는 `/discover` 페이지를 신설했습니다.
+   - 실시간 스크래핑 워크벤치를 통해 외부 콘텐츠를 내 DB로 즉시 저장할 수 있습니다.
 
-3. **Vercel 자동 배포 환경 구축 및 오류 해결**
-   - Next.js 16과 `@supabase/auth-helpers-nextjs` 호환성 문제(`createRouteHandlerClient` -> `createServerClient`, `await cookies()`)를 모두 해결하고 Vercel 빌드를 성공시켰습니다.
-   - UI 라이브러리(`@base-ui`)의 `asChild` 속성 충돌 에러를 해결했습니다.
+3. **브랜드 로고 시스템 구축**
+   - 보내주신 로고 이미지를 고화질 SVG 컴포넌트(`Logo.tsx`)로 완벽하게 재구현했습니다.
+   - 헤더와 메인 페이지에 일관된 브랜드 아이덴티티를 적용했습니다.
+
+4. **인증 및 데이터베이스 안정화**
+   - Supabase Auth를 통한 구글 로그인 및 데이터 연동을 마쳤습니다.
+   - `sonner` 및 `next-themes`를 도입하여 알림 시스템과 테마 대응을 완료했습니다.
 
 ---
 
@@ -30,25 +33,20 @@
 
 ---
 
-## 🔑 환경 변수 복구 가이드 (다른 컴퓨터에서 시작할 때)
-`.env.local` 파일은 깃허브에 올라가지 않습니다! 다른 컴퓨터에서 GitHub 코드를 다운받으신 후에는, 최상위 폴더에 `.env.local` 파일을 하나 만드시고 아래 내용을 **그대로 붙여넣어 주세요.**
-
+## 🔑 환경 변수 가이드
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://nbismihypxsfkbuoqrpb.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5iaXNtaWh5cHhzZmtidW9xcnBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NDQ5MjUsImV4cCI6MjA5MzAyMDkyNX0.o0ssBx1PHy7JiPjPrpWEzq65Ogf6110_Hc9uDXvNrlw
+GEMINI_API_KEY=... (스크래퍼 작동을 위해 필요)
 ```
 
 ---
 
 ## 🎯 다음 세션에 바로 해야 할 일 (Next Steps)
 
-1. **Vercel 환경 변수 업데이트 (1순위)**
-   - Vercel 대시보드로 이동하여 `NEXT_PUBLIC_SUPABASE_ANON_KEY` 환경 변수의 값을 위 올바른 키로 교체합니다.
-   - 저장 후 반드시 **[Redeploy]**를 실행하여 새 키가 서버에 적용되도록 합니다.
-   - 이후 브라우저에서 `https://promptbox-bice.vercel.app/`로 접속하여 구글 로그인이 정상적으로 작동하는지 최종 테스트합니다.
-
-2. **AI 기능 실제 연동**
-   - 현재 Mock(가짜 데이터)으로만 처리되어 있는 `handleAiModify` 등의 AI 프롬프트 생성/요약 기능을 실제 OpenAI 또는 Anthropic API와 연결합니다.
-
-3. **프롬프트 태그 및 필터링 고도화**
-   - 저장된 프롬프트 목록에서 카테고리와 태그를 기반으로 세부 검색 및 필터링 기능을 강화합니다.
+1. **미드저니/인스타그램 등 특정 사이트 최적화**
+   - 현재는 범용 스크래퍼이나, 특정 사이트의 HTML 구조에 맞춰 이미지 추출 로직을 더 정교하게 고도화할 수 있습니다.
+2. **프롬프트 상세 페이지 AI 어시스턴트 강화**
+   - 현재 구현된 AI 변형 기능을 실제 사용자가 더 편리하게 쓸 수 있도록 UI/UX를 다듬습니다.
+3. **태그 자동 추천 시스템**
+   - 프롬프트 저장 시 AI가 적절한 태그를 자동으로 추천하고 등록해 주는 기능을 추가합니다.

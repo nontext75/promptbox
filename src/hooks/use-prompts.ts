@@ -98,6 +98,34 @@ export function usePrompts() {
     }
   };
 
+  const fetchPublicPrompts = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('prompts')
+      .select('*')
+      .is('user_id', null) // Public prompts have no user_id
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching public prompts:', error);
+      return [];
+    }
+    return data || [];
+  }, []);
+
+  const scrapPrompt = async (prompt: Prompt) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    await addPrompt({
+      title: `${prompt.title} (Scrapped)`,
+      content: prompt.content,
+      category: prompt.category,
+      summary: prompt.summary,
+      tags: prompt.tags,
+      thumbnail: prompt.thumbnail,
+    });
+  };
+
   return {
     prompts,
     isLoading,
@@ -105,6 +133,8 @@ export function usePrompts() {
     updatePrompt,
     deletePrompt,
     toggleFavorite,
+    fetchPublicPrompts,
+    scrapPrompt,
     refresh: fetchPrompts
   };
 }
