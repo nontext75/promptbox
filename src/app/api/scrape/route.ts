@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanText = html
-      .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gmb, "")
-      .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gmb, "")
+      .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gm, "")
+      .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gm, "")
       .replace(/<[^>]+>/gm, " ")
       .replace(/\s+/g, " ")
       .trim()
