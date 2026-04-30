@@ -35,6 +35,7 @@ export default function DiscoverPage() {
         setPublicPrompts([
           {
             id: "mock-1",
+            user_id: "system",
             title: "미니멀리즘 3D 아이콘 생성",
             content: "Create a set of high-quality, 3D minimalist icons for a productivity app. Soft lighting, clay-like texture, pastel colors, isometric view, white background.",
             category: "Image",
@@ -46,6 +47,7 @@ export default function DiscoverPage() {
           },
           {
             id: "mock-2",
+            user_id: "system",
             title: "React 최적화 코드 리뷰어",
             content: "You are a senior React developer. Review the following code for performance bottlenecks, unnecessary re-renders, and suggest modern React 18+ patterns. Provide concrete examples for improvement.",
             category: "Coding",
@@ -57,6 +59,7 @@ export default function DiscoverPage() {
           },
           {
             id: "mock-3",
+            user_id: "system",
             title: "감성적인 인스타그램 캡션 제조기",
             content: "작성하고 싶은 사진의 내용과 분위기를 알려주시면, 트렌디하고 감성적인 인스타그램 캡션 3가지를 해시태그와 함께 생성합니다. 이모지를 적절히 섞어주세요.",
             category: "Marketing",
@@ -90,6 +93,7 @@ export default function DiscoverPage() {
         const newPrompts = result.data.map((p: any) => ({
           ...p,
           id: `scraped-${Date.now()}-${Math.random()}`,
+          user_id: "system",
           is_favorite: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
